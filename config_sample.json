@@ -1,0 +1,21 @@
+{
+    "token": "",
+    "embedColor": "#7289DA",
+    "emojiID": "",
+    "guildID": "",
+    "channelID": "",
+    "message": "Thank you for your report! Our mod team will get to it as soon as possible.",
+    "movieID": "",
+    "modID": "",
+    "communityID": "",
+    "prefix": "!",
+    "inviteID": "",
+    "modmailID": "",
+	"clientId": "",
+    "clientSecret": "",
+    "refreshToken": "",
+    "intervalModmail": "30",
+    "intervalPrune": "3600",
+    "shameID": "",
+    "reportID": ""
+}

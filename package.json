@@ -1,0 +1,25 @@
+{
+  "name": "reportbot",
+  "version": "1.0.0",
+  "description": "Discord bot that allows users to report messages by adding a reaction",
+  "main": "index.js",
+  "dependencies": {
+    "discord.js": "^12.5.1",
+    "sequelize": "^6.3.5",
+    "snoowrap": "^1.21.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/byeuji/reportbot.git"
+  },
+  "author": "Byeuji <byeuji@girlgamers.org>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/byeuji/reportbot/issues"
+  },
+  "homepage": "https://github.com/byeuji/reportbot#readme"
+}
