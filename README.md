@@ -8,7 +8,8 @@ Discord bot that allows users to report messages by adding a reaction
 - `git clone https://github.com/byeuji/reportbot.git`
 - `cd reportbot`
 - `npm install`
-- Fill in the `config.js` file.
+- Fill in the `config_sample.json` file.
+- Rename `config_sample.json` to `config.json`
 
 **SUGGESTED WAY TO RUN**
 - Install PM2: https://pm2.keymetrics.io/docs/usage/quick-start/
