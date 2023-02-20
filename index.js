@@ -53,7 +53,8 @@ function getModmail() {
 			embed.react('🔥'),
 			embed.react('❓')
 		});
-		r.getNewModmailConversation(modmail[0].id).archive();
+		r.getNewModmailConversation(modmail[0].id).reply(`Hi there,\n\nThis is an automated message letting you know your message has been received.\n\nPlease be aware that we sometimes receive hundreds of applications per week, and our moderation team is all volunteer, so it may take some time to respond. We appreciate your patience.`)
+			.then(() => r.getNewModmailConversation(modmail[0].id).archive());
 	});
 };
 
@@ -80,7 +81,7 @@ client.on('messageReactionAdd', async (reaction, user) => {
 			{name: 'Response', value: '👍 Acknowledge', inline: true}
 		)
 		client.channels.cache.get(config.channelID).send('@here', reportEmbed).then(embed => {
-			embed.react('👍')
+			// embed.react('👍')
 		});
 		user.send(config.message);
 		return;
@@ -105,7 +106,7 @@ client.on('messageReactionAdd', async (reaction, user) => {
 		if (!(reaction.message.channel.id === config.modmailID)) return;
 		let channel = client.channels.cache.get(config.inviteID);
 		channel.createInvite({maxUses: 1, unique: true }).then(invite => {
-			r.getNewModmailConversation(reaction.message.embeds[0].fields[3].value).reply(`Hi! \n\n Thanks for applying to join the r/GirlGamers Discord \n\n *Link expires in 24 hours; feel free to ask for another if needed* \n\n https://discord.gg/${invite.code}`)
+			r.getNewModmailConversation(reaction.message.embeds[0].fields[3].value).reply(`Hi! \n\n Thanks for applying to join the r/GirlGamers Discord \n\n Before accepting the invite below, please be sure to COMPLETELY shut down and restart your Discord application to ensure it is fully updated. Otherwise, you may have difficulty accepting our Server Rules page via Discord's [Rule Screening service.](https://support.discord.com/hc/en-us/articles/1500000466882-Rules-Screening-FAQ) \n\n*Link expires in 24 hours; feel free to ask for another if needed* \n\n https://discord.gg/${invite.code}`)
 				.then(() => r.getNewModmailConversation(reaction.message.embeds[0].fields[3].value).archive());
 		});
 		reaction.message.delete()
@@ -145,7 +146,10 @@ client.on('messageReactionAdd', async (reaction, user) => {
 		if (!reaction.message.author.bot) return;
 		if (user.bot) return;
 		if (!(reaction.message.channel.id === config.modmailID)) return;
-		r.getNewModmailConversation(reaction.message.embeds[0].fields[3].value).archive();
+		//Insert archiver's name user.tag
+		r.getNewModmailConversation(reaction.message.embeds[0].fields[3].value).reply(`Archived by ${user.tag} with no reason given`,`false`,`true`)
+			.then(() => r.getNewModmailConversation(reaction.message.embeds[0].fields[3].value).archive());
+		//r.getNewModmailConversation(reaction.message.embeds[0].fields[3].value).archive();
 		reaction.message.delete();
 	};
 	if (reaction.emoji.name === '❓') {
