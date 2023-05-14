@@ -165,6 +165,7 @@ client.on('messageReactionAdd', async (reaction, user) => {
 				{name: 'Second Opinion By', value: user.tag, inline: true},
 				{name: 'Responses', value: '✅ Accept | 👨 Man | ℹ Request Info | 🔄 Resend Invite \n 🔥 Archive'}
 			)
+			.setColor(config.secondOpinionColor);
 		reaction.message.edit(inviteEdit);
 		reaction.remove();
 	};
