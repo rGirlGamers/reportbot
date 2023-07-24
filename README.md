@@ -1,28 +1,36 @@
-# Report Bot
+# Invite Bot
 
-Discord bot that allows users to report messages by adding a reaction
+Discord Bot that uses snoowrap to pull reddit Mod Mail into a Discord Channel for moderating invite requests.
 
 ## Installation
 
 - Create a discord bot here: https://discord.com/developers/applications
-- `git clone https://github.com/byeuji/reportbot.git`
-- `cd reportbot`
+- `git clone https://github.com/Jykinturah/invitebot.git`
+- `cd invitebot`
 - `npm install`
-- Fill in the `config_sample.json` file.
-- Rename `config_sample.json` to `config.json`
+- `cp config.json.sample config.json`
+- Edit the `config.json` file with your credentials and other information.
+- `node index.js`
+- The bot is now running.
 
-**SUGGESTED WAY TO RUN**
-- Install PM2: https://pm2.keymetrics.io/docs/usage/quick-start/
+## Using PM2
+
+- PM2 can be used to run the process in the background.
 - `npm install pm2@latest -g`
-- `pm2 start ecosystem.config.js`
-- `pm2 status`, and confirm `ReportBot` is running
-* If not using pm2: `node .`
+- `pm2 startup`
+- Follow the onscreen instructions to enable pm2 autostart on reboot.
+- `pm2 start index.js --name invitebot`
+- `pm2 save`
+- `pm2 status`
+- invitebot should be running now.
 
 ## How it works
 
-1. React to any message you want to report with the chosen report emoji.
-2. ReportBot will instantly remove the reaction so your report is relatively anonymous.
-3. ReportBot will send a message to the chosen channel with your report information*.
-4. You will receive a DM confirming that your report was recieved.
+Invite Bot will use the configured Reddit credentials to check for Reddit Mod Mail at the target subreddit. It will then generate entries in the configured Discord Server Channel using Reddit's Thread ID as a record to keep track of entries it has posted to allow for reading requests for Discord invites.
 
-*This includes the messages content, author, channel, who reported and a link to the message.
+## Warnings
+
+- Uses message based prefix commands instead of slash commands implemented by discord.js.
+- Uses emoji reactions instead of interactions implement by discord.js.
+- Snoowrap has been not under active development.
+- Requires Messages Intent which is very permissive to look for prefix commands.

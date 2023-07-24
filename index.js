@@ -11,12 +11,18 @@ client.once('ready', () => {
 });
 
 client.on('ready', () => {
+	// Remove Inactive Users on client ready
 	pruneMembers();
+	// Remove Inactive Users every [intervalPrune] seconds
 	client.setInterval(pruneMembers, intervalPrune);
+
+	// Query Reddit Modmail on client ready
 	getModmail();
+	// Query Reddit Modmail every [intervalModmail] seconds
 	client.setInterval(getModmail, intervalModmail);
 });
 
+/** Prune Members inactive for set amount of days */
 function pruneMembers() {
 	let guild = client.guilds.cache.get(config.guildID);
 	guild.members.prune({ days: 7 });
@@ -59,36 +65,16 @@ function getModmail() {
 };
 
 client.on('messageReactionAdd', async (reaction, user) => {
-	if (reaction.emoji.id === config.emojiID) {
-		reaction.remove();
-		if (reaction.message.partial) await reaction.message.fetch();
-		if (reaction.message.content.length > 0) {
-			var message = reaction.message.content
-		} else {
-			var message = 'Embedded Content'
-		}
-		const reportEmbed = new Discord.MessageEmbed()
-		.setColor(config.embedColor)
-		.setTitle('User Report')
-		.addFields(
-			{name: 'Message', value: message},
-			{name: 'Author', value: reaction.message.author.tag, inline: true},
-			{name: 'Channel', value: `#${reaction.message.channel.name}`, inline: true},
-			{name: 'Reported By', value: user.tag, inline: true},
-		)
-		.addFields(
-			{name: 'Link', value: `[Go to Message](https://discordapp.com/channels/${config.guildID}/${reaction.message.channel.id}/${reaction.message.id}) ➡`, inline: true},
-			{name: 'Response', value: '👍 Acknowledge', inline: true}
-		)
-		client.channels.cache.get(config.channelID).send('@here', reportEmbed).then(embed => {
-		});
-		user.send(config.message);
-		return;
-	};
+
+	/** Removed Report Code Block */
+
+	// Moved these out of `if` to keep the code D.R.Y.
+	if (reaction.message.partial) await reaction.message.fetch();
+	if (!reaction.message.author.bot) return;
+	if (user.bot) return;
+	
+	/** START Invite Post Reactions Code Block **/
 	if (reaction.emoji.name === '👍') {
-		if (reaction.message.partial) await reaction.message.fetch();
-		if (!reaction.message.author.bot) return;
-		if (user.bot) return;
 		if (!(reaction.message.embeds[0].fields[5].name === 'Response')) return;
 		const getReport = reaction.message.embeds[0].spliceFields(5, 1);
 		const reportEdit = new Discord.MessageEmbed(getReport)
@@ -98,11 +84,12 @@ client.on('messageReactionAdd', async (reaction, user) => {
 		reaction.message.edit(reportEdit);
 		reaction.remove();
 	};
+
+	// Moved this out `if` to keep the code D.R.Y.
+	if (!(reaction.message.channel.id === config.modmailID)) return;
+
+	// Accept
 	if (reaction.emoji.name === '✅') {
-		if (reaction.message.partial) await reaction.message.fetch();
-		if (!reaction.message.author.bot) return;
-		if (user.bot) return;
-		if (!(reaction.message.channel.id === config.modmailID)) return;
 		let channel = client.channels.cache.get(config.inviteID);
 		channel.createInvite({maxUses: 1, unique: true }).then(invite => {
 			r.getNewModmailConversation(reaction.message.embeds[0].fields[3].value).reply(`Hi! \n\n Thanks for applying to join the r/GirlGamers Discord \n\n Before accepting the invite below, please be sure to COMPLETELY shut down and restart your Discord application to ensure it is fully updated. Otherwise, you may have difficulty accepting our Server Rules page via Discord's [Rule Screening service.](https://support.discord.com/hc/en-us/articles/1500000466882-Rules-Screening-FAQ) \n\n*Link expires in 24 hours; feel free to ask for another if needed* \n\n https://discord.gg/${invite.code}`,'true','false')
@@ -111,31 +98,25 @@ client.on('messageReactionAdd', async (reaction, user) => {
 		});
 		reaction.message.delete()
 	};
+
+	// Man
 	if (reaction.emoji.name === '👨') {
-		if (reaction.message.partial) await reaction.message.fetch();
-		if (!reaction.message.author.bot) return;
-		if (user.bot) return;
-		if (!(reaction.message.channel.id === config.modmailID)) return;
 		r.getNewModmailConversation(reaction.message.embeds[0].fields[3].value).reply('Hi! \n\n Thanks for applying; however, this is a female-identifying space so we will have to decline.','true','false')
 			.then(() => r.getNewModmailConversation(reaction.message.embeds[0].fields[3].value).reply(`Denied by ${user.tag}`,`false`,`true`))
 			.then(() => r.getNewModmailConversation(reaction.message.embeds[0].fields[3].value).archive());
 		reaction.message.delete();
 	};
+
+	// Request Info
 	if (reaction.emoji.name === 'ℹ') {
-		if (reaction.message.partial) await reaction.message.fetch();
-		if (!reaction.message.author.bot) return;
-		if (user.bot) return;
-		if (!(reaction.message.channel.id === config.modmailID)) return;
 		r.getNewModmailConversation(reaction.message.embeds[0].fields[3].value).reply(`Thanks for applying; however, due to your posting history we will need more information. \n\n Do you mind providing a link to a public text-based social media (not TikTok or Instagram) to verify? \n\n Please note that we aren't looking for photo or voice verification, \n we want to make sure we're inviting users that contribute to a positive and supportive environment.`,'true','false')
 			.then(() => r.getNewModmailConversation(reaction.message.embeds[0].fields[3].value).reply(`Requested by ${user.tag}`,`false`,`true`))
 			.then(() => r.getNewModmailConversation(reaction.message.embeds[0].fields[3].value).archive());
 		reaction.message.delete();
 	};
+
+	// Resend Invite
 	if (reaction.emoji.name === '🔄') {
-		if (reaction.message.partial) await reaction.message.fetch();
-		if (!reaction.message.author.bot) return;
-		if (user.bot) return;
-		if (!(reaction.message.channel.id === config.modmailID)) return;
 		let channel = client.channels.cache.get(config.inviteID);
 		channel.createInvite({maxUses: 1, unique: true }).then(invite => {
 			r.getNewModmailConversation(reaction.message.embeds[0].fields[3].value).reply(`Here's another invite \n\n https://discord.gg/${invite.code}`,'true','false')
@@ -144,20 +125,16 @@ client.on('messageReactionAdd', async (reaction, user) => {
 		});
 		reaction.message.delete();
 	};
+
+	// Archive
 	if (reaction.emoji.name === '🔥') {
-		if (reaction.message.partial) await reaction.message.fetch();
-		if (!reaction.message.author.bot) return;
-		if (user.bot) return;
-		if (!(reaction.message.channel.id === config.modmailID)) return;
 		r.getNewModmailConversation(reaction.message.embeds[0].fields[3].value).reply(`Archived by ${user.tag} with no reason given`,`false`,`true`)
 			.then(() => r.getNewModmailConversation(reaction.message.embeds[0].fields[3].value).archive());
 		reaction.message.delete();
 	};
+
+	// Second Opinion
 	if (reaction.emoji.name === '❓') {
-		if (reaction.message.partial) await reaction.message.fetch();
-		if (!reaction.message.author.bot) return;
-		if (user.bot) return;
-		if (!(reaction.message.channel.id === config.modmailID)) return;
 		if (reaction.message.embeds[0].fields[5].name === 'Second Opinion By') return;
 		const getInvite = reaction.message.embeds[0].spliceFields(5, 1);
 		const inviteEdit = new Discord.MessageEmbed(getInvite)
@@ -169,22 +146,32 @@ client.on('messageReactionAdd', async (reaction, user) => {
 		reaction.message.edit(inviteEdit);
 		reaction.remove();
 	};
+
+	/** END Invite Post Reactions Code Block **/
 });
 
-client.on('message', async (message) => {
+client.on('messageCreate', async (message) => {
 
+	// Ignore bot messages
 	if (message.author.bot) return;
 
+	// Ignore PMs
 	if (message.guild === null) return;
 
+	// Ignore Message without Command Prefix [Single Character]
 	if (message.content.indexOf(config.prefix) !== 0) return;
+
+	// Ignore Message if Author is no longer Guild Member before checking for Roles
 	if (!message.member) return;
-	  
+
+	// Ignore Messages that are not made by a user with Moderator Role or Community Role matched by ID
 	if (!(message.member.roles.cache.has(config.modID) || message.member.roles.cache.has(config.communityID))) return;
 
+	/** START Command Logic */
 	const args = message.content.slice(config.prefix.length).trim().split(/ +/)
 	const command = args.shift().toLowerCase()
 
+	// Invite Code Block
 	if (command === 'invite') {
 		if (!args.length) {
 			return message.channel.send(`You didn't provide any arguments, ${message.author}!`);
@@ -201,6 +188,7 @@ client.on('message', async (message) => {
 		};
 	};
 
+	// Cone of Shame Code Block
 	if (command === 'shame') {
 		if (!args.length) {
 			return message.channel.send(`You didn't provide any arguments, ${message.author}!`);
@@ -224,7 +212,8 @@ client.on('message', async (message) => {
 			};
 		};
 	};
-
+	
+	// Report Code Block
 	if (command === 'report') {
 		if (!args.length) {
 			return message.channel.send(`You didn't provide any arguments, ${message.author}!`);
