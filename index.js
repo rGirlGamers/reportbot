@@ -1,7 +1,7 @@
-const Discord = require('discord.js');
+const { EmbedBuilder, Client, GatewayIntentBits } = require('discord.js');
 const config = require('./config.json');
 const snoowrap = require('snoowrap');
-const client = new Discord.Client({ partials: ['MESSAGE', 'CHANNEL', 'REACTION'] });
+const client = new Client( { intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.GuildMessageReactions, GatewayIntentBits.MessageContent] });
 
 var intervalPrune = (config.intervalPrune * 1000);
 var intervalModmail = (config.intervalModmail * 1000);
@@ -38,7 +38,7 @@ const r = new snoowrap({
 function getModmail() {
 	r.getSubreddit('GGDiscordInvites').getNewModmailConversations({limit: 1}).then(modmail => {
 		if (modmail[0].messages[0].author.name.name === 'Byeuji' || modmail[0].messages[0].author.name.name === 'GirlGamersDiscord' || modmail[0].messages[0].author.name.name === 'ILuffhomer') return;
-		const inviteEmbed = new Discord.MessageEmbed()
+		const inviteEmbed = new EmbedBuilder()
 		.setColor(config.embedColor)
 		.setTitle(modmail[0].subject)
 		.addFields(
@@ -77,7 +77,7 @@ client.on('messageReactionAdd', async (reaction, user) => {
 	if (reaction.emoji.name === '👍') {
 		if (!(reaction.message.embeds[0].fields[5].name === 'Response')) return;
 		const getReport = reaction.message.embeds[0].spliceFields(5, 1);
-		const reportEdit = new Discord.MessageEmbed(getReport)
+		const reportEdit = new EmbedBuilder(getReport)
 			.addFields(
 				{name: 'Acknowledged by', value: user.tag, inline: true}
 			)
@@ -137,7 +137,7 @@ client.on('messageReactionAdd', async (reaction, user) => {
 	if (reaction.emoji.name === '❓') {
 		if (reaction.message.embeds[0].fields[5].name === 'Second Opinion By') return;
 		const getInvite = reaction.message.embeds[0].spliceFields(5, 1);
-		const inviteEdit = new Discord.MessageEmbed(getInvite)
+		const inviteEdit = new EmbedBuilder(getInvite)
 			.addFields(
 				{name: 'Second Opinion By', value: user.tag, inline: true},
 				{name: 'Responses', value: '✅ Accept | 👨 Man | ℹ Request Info | 🔄 Resend Invite \n 🔥 Archive'}
@@ -219,7 +219,7 @@ client.on('messageCreate', async (message) => {
 			return message.channel.send(`You didn't provide any arguments, ${message.author}!`);
 		} else if (args[0] === 'create') {
 			const member = message.guild.members.cache.get(args[1]);
-			const cardEmbed = new Discord.MessageEmbed()
+			const cardEmbed = new EmbedBuilder()
 			.setColor(config.embedColor)
 			.setTitle('Report Profile')
 			.setDescription(`**Username:** ${member.user.tag}\n**ID:** ${member.user.id}`)
@@ -231,7 +231,7 @@ client.on('messageCreate', async (message) => {
 			if (!(card.channel.id === config.reportID)) return;
 			if (!(card.embeds[0].title === 'Report Profile')) return;
 			const getCard = card.embeds[0]
-			const cardEdit = new Discord.MessageEmbed(getCard)
+			const cardEdit = new EmbedBuilder(getCard)
 				.addFields(
 					{name: message.author.tag, value: args.slice(2).join(' ')}
 				)
@@ -243,7 +243,7 @@ client.on('messageCreate', async (message) => {
 			if (!(card.embeds[0].title === 'Report Profile')) return;
 			let field = args[2] - 1;
 			const getCard = card.embeds[0].spliceFields(field, 1);
-			const cardEdit = new Discord.MessageEmbed(getCard)
+			const cardEdit = new EmbedBuilder(getCard)
 			card.edit(cardEdit);
 		};
 	};
