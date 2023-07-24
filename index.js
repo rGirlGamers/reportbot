@@ -12,9 +12,9 @@ client.once('ready', () => {
 
 client.on('ready', () => {
 	// Remove Inactive Users on client ready
-	pruneMembers();
+	// pruneMembers();
 	// Remove Inactive Users every [intervalPrune] seconds
-	client.setInterval(pruneMembers, intervalPrune);
+	// client.setInterval(pruneMembers, intervalPrune);
 
 	// Query Reddit Modmail on client ready
 	getModmail();
@@ -23,10 +23,10 @@ client.on('ready', () => {
 });
 
 /** Prune Members inactive for set amount of days */
-function pruneMembers() {
-	let guild = client.guilds.cache.get(config.guildID);
-	guild.members.prune({ days: 7 });
-};
+// function pruneMembers() {
+// 	let guild = client.guilds.cache.get(config.guildID);
+// 	guild.members.prune({ days: 7 });
+// };
 
 const r = new snoowrap({
 	userAgent: 'invite-bot',
