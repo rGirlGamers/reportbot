@@ -39,19 +39,19 @@ function getModmail() {
 	r.getSubreddit('GGDiscordInvites').getNewModmailConversations({limit: 1}).then(modmail => {
 		if (modmail[0].messages[0].author.name.name === 'Byeuji' || modmail[0].messages[0].author.name.name === 'GirlGamersDiscord' || modmail[0].messages[0].author.name.name === 'ILuffhomer') return;
 		const inviteEmbed = new EmbedBuilder()
-		.setColor(config.embedColor)
-		.setTitle(modmail[0].subject)
-		.addFields(
-			{name: 'Message', value: modmail[0].messages[0].bodyMarkdown},
-			{name: 'Author', value: modmail[0].messages[0].author.name.name, inline: true},
-			{name: 'Profile', value: `[Go to Overview](https://www.reddit.com/user/${modmail[0].messages[0].author.name.name}) ➡`, inline: true},
-			{name: 'Thread ID', value: modmail[0].id, inline: true},
-		)
-		.addFields(
-			{name: 'Link', value: `[Go to Thread](https://mod.reddit.com/mail/all/${modmail[0].id}) ➡`, inline: true},
-			{name: 'Responses', value: `✅ Accept | 👨 Man | ℹ Request Info | 🔄 Resend Invite \n 🔥 Archive | ❓ Second Opinion`}
-		)
-		client.channels.cache.get(config.modmailID).send(inviteEmbed).then(embed => {
+			.setColor(config.embedColor)
+			.setTitle(modmail[0].subject)
+			.addFields(
+				{name: 'Message', value: modmail[0].messages[0].bodyMarkdown},
+				{name: 'Author', value: modmail[0].messages[0].author.name.name, inline: true},
+				{name: 'Profile', value: `[Go to Overview](https://www.reddit.com/user/${modmail[0].messages[0].author.name.name}) ➡`, inline: true},
+				{name: 'Thread ID', value: modmail[0].id, inline: true},
+			)
+			.addFields(
+				{name: 'Link', value: `[Go to Thread](https://mod.reddit.com/mail/all/${modmail[0].id}) ➡`, inline: true},
+				{name: 'Responses', value: `✅ Accept | 👨 Man | ℹ Request Info | 🔄 Resend Invite \n 🔥 Archive | ❓ Second Opinion`}
+			)
+		client.channels.cache.get(config.modmailID).send({ embeds: [inviteEmbed] }).then(embed => {
 			embed.react('✅'),
 			embed.react('👨'),
 			embed.react('ℹ'),
@@ -81,7 +81,7 @@ client.on('messageReactionAdd', async (reaction, user) => {
 			.addFields(
 				{name: 'Acknowledged by', value: user.tag, inline: true}
 			)
-		reaction.message.edit(reportEdit);
+		reaction.message.edit({ embeds: [reportEdit] });
 		reaction.remove();
 	};
 
@@ -143,7 +143,7 @@ client.on('messageReactionAdd', async (reaction, user) => {
 				{name: 'Responses', value: '✅ Accept | 👨 Man | ℹ Request Info | 🔄 Resend Invite \n 🔥 Archive'}
 			)
 			.setColor(config.secondOpinionColor);
-		reaction.message.edit(inviteEdit);
+		reaction.message.edit({ embeds: [inviteEdit] });
 		reaction.remove();
 	};
 
@@ -224,7 +224,7 @@ client.on('messageCreate', async (message) => {
 			.setTitle('Report Profile')
 			.setDescription(`**Username:** ${member.user.tag}\n**ID:** ${member.user.id}`)
 			.setThumbnail(member.user.avatarURL())
-			client.channels.cache.get(config.reportID).send(cardEmbed);
+			client.channels.cache.get(config.reportID).send({ embeds: [cardEmbed] });
 		} else if (args[0] === 'add') {
 			const chnl = client.channels.cache.get(config.reportID);
 			const card = await chnl.messages.fetch(args[1]);
@@ -235,7 +235,7 @@ client.on('messageCreate', async (message) => {
 				.addFields(
 					{name: message.author.tag, value: args.slice(2).join(' ')}
 				)
-			card.edit(cardEdit);
+			card.edit({ embeds: [cardEdit] });
 		} else if (args[0] === 'remove') {
 			const chnl = client.channels.cache.get(config.reportID);
 			const card = await chnl.messages.fetch(args[1]);
@@ -244,7 +244,7 @@ client.on('messageCreate', async (message) => {
 			let field = args[2] - 1;
 			const getCard = card.embeds[0].spliceFields(field, 1);
 			const cardEdit = new EmbedBuilder(getCard)
-			card.edit(cardEdit);
+			card.edit({ embeds: [cardEdit] });
 		};
 	};
 });
