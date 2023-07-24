@@ -3,7 +3,6 @@ const config = require('./config.json');
 const snoowrap = require('snoowrap');
 const client = new Client( { intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.GuildMessageReactions, GatewayIntentBits.MessageContent] });
 
-var intervalPrune = (config.intervalPrune * 1000);
 var intervalModmail = (config.intervalModmail * 1000);
 
 client.once('ready', () => {
@@ -11,22 +10,11 @@ client.once('ready', () => {
 });
 
 client.on('ready', () => {
-	// Remove Inactive Users on client ready
-	// pruneMembers();
-	// Remove Inactive Users every [intervalPrune] seconds
-	// client.setInterval(pruneMembers, intervalPrune);
-
 	// Query Reddit Modmail on client ready
 	getModmail();
 	// Query Reddit Modmail every [intervalModmail] seconds
-	client.setInterval(getModmail, intervalModmail);
+	setInterval(getModmail, intervalModmail);
 });
-
-/** Prune Members inactive for set amount of days */
-// function pruneMembers() {
-// 	let guild = client.guilds.cache.get(config.guildID);
-// 	guild.members.prune({ days: 7 });
-// };
 
 const r = new snoowrap({
 	userAgent: 'invite-bot',
@@ -37,7 +25,7 @@ const r = new snoowrap({
 
 function getModmail() {
 	r.getSubreddit('GGDiscordInvites').getNewModmailConversations({limit: 1}).then(modmail => {
-		if (modmail[0].messages[0].author.name.name === 'Byeuji' || modmail[0].messages[0].author.name.name === 'GirlGamersDiscord' || modmail[0].messages[0].author.name.name === 'ILuffhomer') return;
+		if (modmail.length === 0 || modmail[0].messages === undefined || modmail[0].messages[0].author.name.name === 'Byeuji' || modmail[0].messages[0].author.name.name === 'GirlGamersDiscord' || modmail[0].messages[0].author.name.name === 'ILuffhomer') return;
 		const inviteEmbed = new EmbedBuilder()
 			.setColor(config.embedColor)
 			.setTitle(modmail[0].subject)
@@ -72,21 +60,9 @@ client.on('messageReactionAdd', async (reaction, user) => {
 	if (reaction.message.partial) await reaction.message.fetch();
 	if (!reaction.message.author.bot) return;
 	if (user.bot) return;
+	if (!(reaction.message.channel.id === config.modmailID)) return;
 	
 	/** START Invite Post Reactions Code Block **/
-	if (reaction.emoji.name === '👍') {
-		if (!(reaction.message.embeds[0].fields[5].name === 'Response')) return;
-		const getReport = reaction.message.embeds[0].spliceFields(5, 1);
-		const reportEdit = new EmbedBuilder(getReport)
-			.addFields(
-				{name: 'Acknowledged by', value: user.tag, inline: true}
-			)
-		reaction.message.edit({ embeds: [reportEdit] });
-		reaction.remove();
-	};
-
-	// Moved this out `if` to keep the code D.R.Y.
-	if (!(reaction.message.channel.id === config.modmailID)) return;
 
 	// Accept
 	if (reaction.emoji.name === '✅') {
@@ -136,12 +112,11 @@ client.on('messageReactionAdd', async (reaction, user) => {
 	// Second Opinion
 	if (reaction.emoji.name === '❓') {
 		if (reaction.message.embeds[0].fields[5].name === 'Second Opinion By') return;
-		const getInvite = reaction.message.embeds[0].spliceFields(5, 1);
-		const inviteEdit = new EmbedBuilder(getInvite)
-			.addFields(
-				{name: 'Second Opinion By', value: user.tag, inline: true},
-				{name: 'Responses', value: '✅ Accept | 👨 Man | ℹ Request Info | 🔄 Resend Invite \n 🔥 Archive'}
-			)
+		const inviteEdit = new EmbedBuilder(reaction.message.embeds[0]).spliceFields(5, 1)
+            .addFields(
+                {name: 'Second Opinion By', value: user.tag, inline: true},
+                {name: 'Responses', value: '✅ Accept | 👨 Man | ℹ Request Info | 🔄 Resend Invite \n 🔥 Archive'}
+            )
 			.setColor(config.secondOpinionColor);
 		reaction.message.edit({ embeds: [inviteEdit] });
 		reaction.remove();
