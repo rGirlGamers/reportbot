@@ -1,7 +1,7 @@
 module.exports = {
   apps: [
     {
-      name: "ReportBot",
+      name: "InviteBot",
       script: "index.js",
     },
   ],
