@@ -26,11 +26,14 @@ const r = new snoowrap({
 function getModmail() {
 	r.getSubreddit('GGDiscordInvites').getNewModmailConversations({limit: 1}).then(modmail => {
 		if (modmail.length === 0 || modmail[0].messages === undefined || modmail[0].messages[0].author.name.name === 'Byeuji' || modmail[0].messages[0].author.name.name === 'GirlGamersDiscord' || modmail[0].messages[0].author.name.name === 'ILuffhomer') return;
+		// Check character limit 
+		let modmailBody = modmail[0].messages[0].bodyMarkdown
+		if (modmailBody.length > 1000) modmailBody = modmailBody.slice(0,1000) + '... [Continued]';
 		const inviteEmbed = new EmbedBuilder()
 			.setColor(config.embedColor)
 			.setTitle(modmail[0].subject)
 			.addFields(
-				{name: 'Message', value: modmail[0].messages[0].bodyMarkdown},
+				{name: 'Message', value: modmailBody},
 				{name: 'Author', value: modmail[0].messages[0].author.name.name, inline: true},
 				{name: 'Profile', value: `[Go to Overview](https://www.reddit.com/user/${modmail[0].messages[0].author.name.name}) ➡`, inline: true},
 				{name: 'Thread ID', value: modmail[0].id, inline: true},
