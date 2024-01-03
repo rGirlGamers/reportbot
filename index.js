@@ -24,35 +24,70 @@ const r = new snoowrap({
 });
 
 function getModmail() {
-	r.getSubreddit('GGDiscordInvites').getNewModmailConversations({limit: 1}).then(modmail => {
-		if (modmail.length === 0 || modmail[0].messages === undefined || modmail[0].messages[0].author.name.name === 'Byeuji' || modmail[0].messages[0].author.name.name === 'GirlGamersDiscord' || modmail[0].messages[0].author.name.name === 'ILuffhomer') return;
-		// Check character limit 
-		let modmailBody = modmail[0].messages[0].bodyMarkdown
-		if (modmailBody.length > 1000) modmailBody = modmailBody.slice(0,1000) + '... [Continued]';
-		const inviteEmbed = new EmbedBuilder()
-			.setColor(config.embedColor)
-			.setTitle(modmail[0].subject)
-			.addFields(
-				{name: 'Message', value: modmailBody},
-				{name: 'Author', value: modmail[0].messages[0].author.name.name, inline: true},
-				{name: 'Profile', value: `[Go to Overview](https://www.reddit.com/user/${modmail[0].messages[0].author.name.name}) ➡`, inline: true},
-				{name: 'Thread ID', value: modmail[0].id, inline: true},
-			)
-			.addFields(
-				{name: 'Link', value: `[Go to Thread](https://mod.reddit.com/mail/all/${modmail[0].id}) ➡`, inline: true},
-				{name: 'Responses', value: `✅ Accept | 👨 Man | ℹ Request Info | 🔄 Resend Invite \n 🔥 Archive | ❓ Second Opinion`}
-			)
-		client.channels.cache.get(config.modmailID).send({ embeds: [inviteEmbed] }).then(embed => {
-			embed.react('✅'),
-			embed.react('👨'),
-			embed.react('ℹ'),
-			embed.react('🔄'),
-			embed.react('🔥'),
-			embed.react('❓')
+	r.getSubreddit( config.subReddit || 'GGDiscordInvites' ) // Target Subreddit (defaults to GGDiscordInvites if 'config.subReddit' isn't set)
+		.getNewModmailConversations({limit: 10}) // Read 10 Modmail Conversations that are not archived
+		.then(modmailConversations => {
+			// If there are no Modmail Conversations that are not archived, exit
+			if (modmailConversations.length < 1) return;
+
+			// forEach to iterate through all Modmail Conversations
+			modmailConversations.forEach(modmail => {
+
+				// If there are no messages, exit this iteration
+				if (modmail.messages === undefined ) return;
+
+				// Thread ID used to link to Modmail and later Archive
+				let modmailThreadID = modmail.id 
+
+				// Fetch the entire Modmail Conversation
+				r.getNewModmailConversation(modmail.id).fetch().then(fetchedModmail => {
+
+					// Human readable variable names
+					let modmailBody = fetchedModmail.messages[0].bodyMarkdown
+					let modmailAuthor = fetchedModmail.messages[0].author.name.name
+					let modmailSubject = fetchedModmail.subject
+					
+					// If body is longer than 1000 characters, trim
+					if (modmailBody.length > 1000) modmailBody = modmailBody.slice(0,1000) + '... [Continued]';
+
+					// Generate Discord Embed
+					const inviteEmbed = new EmbedBuilder()
+						.setColor(config.embedColor)
+						.setTitle(modmailSubject)
+						.addFields(
+							{name: 'Message', value: modmailBody},
+							{name: 'Author', value: modmailAuthor, inline: true},
+							{name: 'Profile', value: `[Go to Overview](https://www.reddit.com/user/${modmailAuthor}) ➡`, inline: true},
+							{name: 'Thread ID', value: modmailThreadID, inline: true},
+						)
+						.addFields(
+							{name: 'Link', value: `[Go to Thread](https://mod.reddit.com/mail/all/${modmailThreadID}) ➡`, inline: true},
+							{name: 'Responses', value: `✅ Accept | 👨 Man | ℹ Request Info | 🔄 Resend Invite \n 🔥 Archive | ❓ Second Opinion`}
+						)
+
+					// Send Invite Card to Invite Channel
+					client.channels.cache.get(config.modmailID).send({ embeds: [inviteEmbed] }).then(embed => {
+						embed.react('✅'),
+						embed.react('👨'),
+						embed.react('ℹ'),
+						embed.react('🔄'),
+						embed.react('🔥'),
+						embed.react('❓')
+					});
+
+					// Send automatic Response and Archive Modmail Conversation
+					r.getNewModmailConversation(modmailThreadID)
+						.reply(`Hi there,\n\nThis is an automated message letting you know your message has been received.` +
+							`\n\nPlease be aware that we sometimes receive hundreds of applications per week, and our moderation ` +
+							`team is all volunteers, so it may take some time to respond. We appreciate your patience.`, true, false)
+						.then(() => {
+							r.getNewModmailConversation(modmailThreadID).archive().then(() => {
+								console.log(`Autoreplied and Archived Thread ID: ${modmailThreadID}`)
+							});
+						});
+				});
+			});
 		});
-		r.getNewModmailConversation(modmail[0].id).reply(`Hi there,\n\nThis is an automated message letting you know your message has been received.\n\nPlease be aware that we sometimes receive hundreds of applications per week, and our moderation team is all volunteer, so it may take some time to respond. We appreciate your patience.`,true,false)
-			.then(() => r.getNewModmailConversation(modmail[0].id).archive());
-	});
 };
 
 client.on('messageReactionAdd', async (reaction, user) => {
