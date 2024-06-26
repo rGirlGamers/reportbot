@@ -178,7 +178,14 @@ client.on('messageCreate', async (message) => {
 	if (!message.member) return;
 
 	// Ignore Messages that are not made by a user with Moderator Role or Community Role matched by ID
-	if (!(message.member.roles.cache.has(config.modID) || message.member.roles.cache.has(config.communityID))) return;
+	let isModId = false;
+	let isComID = false;
+
+	if (Array.isArray(config.modID)) for (let i = 0; i < config.modID.length; i++) if (message.member.roles.cache.has(config.modID[i])) isModId = true;
+	else if (message.member.roles.cache.has(config.modID)) isModId = true;
+	if (message.member.roles.cache.has(config.communityID)) isComID = true;
+
+	if (!isModId && !isComID) return;
 
 	/** START Command Logic */
 	const args = message.content.slice(config.prefix.length).trim().split(/ +/)
