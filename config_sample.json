@@ -2,7 +2,7 @@
     "token": "Bot Token",
     "embedColor": "#7289DA",
     "secondOpinionColor": "#e91e63",
-    "modID": "Moderator Role ID",
+    "modID": ["Moderator Role ID 1","Moderator Role ID 2"],
     "communityID": "Community Role ID",
     "prefix": "!",
     "inviteID": "Welcome Channel ID for Invite Links",
